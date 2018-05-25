@@ -1,0 +1,72 @@
+"use strict";
+
+/*
+    [审核的哥哥姐姐辛苦了||The audited brother and sister have worked hard]
+    get(key[userName]) 传key获取某一条祝福 key是用户名
+    set(key[userName], value[wishing])key 用户名 value祝福信息
+    getWhole() 获取链上所有祝福信息
+*/
+
+var WishingWall = function () {
+    LocalContractStorage.defineMapProperty(this, "repo", {
+        parse: function (text) {
+            return new DictItem(text);
+        },
+        stringify: function (o) {
+            return o.toString();
+        }
+    });
+};
+
+WishingWall.prototype = {
+    init: function () {
+        this.num = 0
+    },
+
+    set: function (key, value) {
+
+        key = key.trim();
+        value = value.trim();
+        if (key === "" || value === ""){
+            throw new Error("empty key / value");
+        }
+
+        var dictItem = this.repo.get(key);
+
+        var data = dictItem ? JSON.parse(dictItem) : [];
+
+        data.push({
+            key: key,
+            value: value,
+            time: Date.now()
+        });
+
+        this.repo.put(key, JSON.stringify(data));
+
+        // 这个是相当于备份了合约，方便一次性获取全部合约
+        this.num = this.num + 1;
+        this.repo.put(`__wholeInfoKey__${this.num}`, JSON.stringify({
+            key: key,
+            value: value,
+            time: Date.now()
+        }));
+    },
+
+    getWhole: function () {
+        var wholeMessage = [];
+        var num = this.num
+        for (var i = num; i > 0; i--) {
+            var itemMessage = this.repo.get(`__wholeInfoKey__${i}`);
+            itemMessage && wholeMessage.push(JSON.parse(itemMessage))
+        }
+        return JSON.stringify(wholeMessage)
+    },
+    get: function (key) {
+        key = key.trim();
+        if ( key === "" ) {
+            throw new Error("empty key")
+        }
+        return this.repo.get(key);
+    }
+};
+module.exports = WishingWall;

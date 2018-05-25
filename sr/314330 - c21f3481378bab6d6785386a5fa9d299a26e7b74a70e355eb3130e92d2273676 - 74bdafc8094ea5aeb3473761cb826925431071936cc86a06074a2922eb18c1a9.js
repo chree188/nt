@@ -1,0 +1,1 @@
+var Sings=function(){LocalContractStorage.defineMapProperty(this,"items")};Sings.prototype={init:function(){},save:function(naems){this.items.set("value",naems)}};module.exports=Sings;

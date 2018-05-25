@@ -1,0 +1,1 @@
+"use strict";var FF=function(){LocalContractStorage.defineMapProperty(this,"all")};FF.prototype={init:function(){},save:function(ook){this.all.set("value",ook)}};module.exports=FF;

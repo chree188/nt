@@ -1,0 +1,71 @@
+"use strict";
+
+var DictItem = function(text) {
+    if (text) {
+        var obj = JSON.parse(text);
+        this.key = obj.key;
+        this.value = obj.value;
+        this.author = obj.author;
+    } else {
+        this.key = "";
+        this.author = "";
+        this.value = "";
+    }
+};
+
+DictItem.prototype = {
+    toString: function () {
+        return JSON.stringify(this);
+    }
+};
+
+var SuperDictionary = function () {
+    LocalContractStorage.defineMapProperty(this, "repo", {
+        parse: function (text) {
+            return new DictItem(text);
+        },
+        stringify: function (o) {
+            return o.toString();
+        }
+    });
+};
+
+SuperDictionary.prototype = {
+    init: function () {
+        // todo
+    },
+
+    save: function (key, value) {
+
+        key = key.trim();
+        value = value.trim();
+        if (key === "" || value === ""){
+            throw new Error("参数不能为空！");
+        }
+        if (value.length > 30 || key.length > 30){
+            throw new Error("键/值超过限制长度")
+        }
+
+        var from = Blockchain.transaction.from;
+        var dictItem = this.repo.get(key);
+        if (dictItem){
+            throw new Error("密码已经存在！");
+        }
+
+        dictItem = new DictItem();
+        dictItem.author = from;
+        dictItem.key = key;
+        dictItem.value = value;
+
+        this.repo.put(key, dictItem);
+    },
+
+    get: function (key) {
+        key = key.trim();
+        if ( key === "" ) {
+            throw new Error("密码不存在")
+        }
+        return this.repo.get(key);
+    }
+};
+module.exports = SuperDictionary;
